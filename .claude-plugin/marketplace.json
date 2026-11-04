@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "troy-plugins",
+  "description": "Troy Anderson's personal Claude Code plugins.",
+  "owner": {
+    "name": "Troy Anderson"
+  },
+  "plugins": [
+    {
+      "name": "orchestrate",
+      "description": "Scout, plan, execute, review and test pipeline for multi-step coding tasks, configured per project with a short profile file.",
+      "source": "./"
+    }
+  ]
+}
