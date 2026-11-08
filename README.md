@@ -21,11 +21,11 @@ A Claude Code plugin that runs multi-step coding tasks through a scout → plan 
 From an interactive `claude` terminal:
 
 ```
-/plugin marketplace add /Users/troyanderson/projects/personal/claude-orchestrate
+/plugin marketplace add TheHazeEffect/claude-orchestrate
 /plugin install orchestrate@troy-plugins
 ```
 
-After editing the plugin, run `/plugin marketplace update troy-plugins` and start a new session (agents load at session start).
+The marketplace source is this GitHub repo (private, so the machine must be signed in to GitHub as an account with access). Installs are pinned to a commit: after changing the plugin, commit and push to `main`, bump `version` in `.claude-plugin/plugin.json`, then run `claude plugin marketplace update troy-plugins` and `claude plugin update orchestrate@troy-plugins`, and start a new session (agents load at session start). Local uncommitted edits are never picked up.
 
 ## Use in a project
 
