@@ -37,7 +37,11 @@ Things the project does on purpose; the reviewer must not flag them:
 
 ## Tester
 
-- Kind: `mobile` | `web` | `none`
+- Kind: `mobile` | `web` | `mobile, web` | `none`
+- Default job: `suite` (run the automated suite below) | `cases` (run manual cases from the test plans)
+- Manual cases need owner approval: yes | no
+- Suite (optional): command, e.g. `DEVICE=emulator-5556 scripts/integration_test.sh`; about how long a full run takes
+- Suite device: e.g. `emulator-5556` (AVD `App_IT`) and how to start it. Never use: e.g. `emulator-5554`, which holds data the manual cases need. If the suite wipes app data, say so.
 - Not covered by automated tests (needs the tester): e.g. WebView rendering, payments flow
 - Test plans: e.g. `test/regression/*_PLAN.md`
 - Results folder: e.g. `test/regression/results/`

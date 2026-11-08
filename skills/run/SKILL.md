@@ -11,7 +11,7 @@ You are the orchestrator. You own the plan and the conversation with the user; s
 ## 0. Load the project
 
 1. Read the project's `CLAUDE.md` and `.claude/orchestrate.md` (the profile). If there is no profile, offer to create one from `${CLAUDE_PLUGIN_ROOT}/templates/profile.md`, filled in from the repo (package manifest, CI config, `CLAUDE.md`), and get the user's OK on it before continuing.
-2. Pick the agents. For each role, use the project's own agent if one with that bare name exists (`scout`, `executor`, `reviewer`, `tester`); otherwise this plugin's (`orchestrate:scout`, `orchestrate:executor`, `orchestrate:reviewer`, and `orchestrate:mobile-tester` or `orchestrate:web-tester` per the profile). If neither is loaded (agents load at session start), use the built-in `Explore` agent for scout and a `general-purpose` agent for the others, with the brief opening "You are the <role> described in `<path to agent file>`. Read that file and follow it."
+2. Pick the agents. For each role, use the project's own agent if one with that bare name exists (`scout`, `executor`, `reviewer`, `tester`); otherwise this plugin's (`orchestrate:scout`, `orchestrate:executor`, `orchestrate:reviewer`, `orchestrate:tester`). Skip the tester when the profile says `Kind: none`. If neither is loaded (agents load at session start), use the built-in `Explore` agent for scout and a `general-purpose` agent for the others, with the brief opening "You are the <role> described in `<path to agent file>`. Read that file and follow it."
 3. Create a run folder, `.claude/orchestrate/runs/<YYYY-MM-DD>-<slug>/`, and make sure `.claude/orchestrate/runs/` is in `.gitignore`. Never reuse or overwrite an earlier run's folder.
 
 | Role | Does | Never |
@@ -62,10 +62,12 @@ Show the plan to the user and wait for approval before any code changes, unless 
 Spawn the executor once per step with: the repository root, the path to `plan.md` and the step id, the scout report paths it needs, and any `CLAUDE.md` constraints that apply. When executors run in parallel, also name the files the others own. Git safety and "don't revert others' work" are in the executor's instructions; do not repeat them.
 
 - Run steps sequentially unless the plan marks them independent with disjoint files.
-- After each step, check the diff yourself (`git diff --stat` and the files). Do not accept "done" on its word.
+- After each step, check the diff yourself (`git diff --stat` and the files). Do not accept "done" on its word. For claimed test or suite passes, read the pass and fail lines in the logs yourself, and brief agents to search full logs for them rather than cutting output with `tail` or `cut`.
+- Executors run only the tests their step touches (one suite file, not the whole slow suite). The full suite runs once, in final verification.
 - **Context gap**: if the executor stops with specific missing-context questions, answer them yourself or send just those questions to a scout, append the answer to the step's notes, and resume the same executor with `SendMessage`. After two gaps on one step, the step is under-specified: rewrite it.
 - If an agent hits its turn limit before reporting, check the tree, then resume it with `SendMessage` instead of starting a fresh one.
 - If a step reports a plan conflict, fix the plan; do not let the executor improvise.
+- **Long runs**: read-only agents (scouts, reviewers) may run while a long suite or device run is going. Executors may not edit files under test until it finishes, so the run's files don't change under it; hold their fixes until it reports.
 
 ## 5. Review
 
@@ -78,20 +80,29 @@ When a phase is done, spawn the reviewer with the repository root, `plan.md`, th
 
 ## 6. Test on device or in the browser (when behaviour needs it)
 
-Run the tester against the profile's test plan:
+Brief the tester according to the profile's **Tester** section:
 
-- Split it into batches of about 5 to 8 cases, run one at a time, each writing its own results file in the profile's results folder.
+- The default job comes from the profile (`suite` or `cases`). If the profile says manual cases need the owner's approval, ask the user before briefing the tester for them, and say in the brief that they approved.
+- Name the device or target in the brief, and repeat any devices the profile says never to use.
+- For manual cases, split the plan into batches of about 5 to 8, run one at a time, each writing its own results file in the profile's results folder.
 - Do not drive the device or browser from the main session; it burns your context.
 - Failures go to an executor as a fix step; then the tester re-runs only the affected cases. Re-review if the fix is not trivial.
+- **Final verification** runs after the last edit, review fixes included: a pass from before any later change does not count. For a suite that can be flaky, require two clean full runs in a row.
 - If the project has no test plan yet and one is needed, have an executor write one (documentation only) as a plan step.
 
 ## 7. Checkpoint
 
 After a phase passes review (and testing, if run), offer the user a checkpoint commit so the next review has a small, clean baseline. Commit only on their yes.
 
+Before committing, check the branch's base: if its PR has already merged, or the branch sits on another unmerged branch, say so and offer a new branch from an up-to-date default branch rather than stacking more work on it.
+
+When a phase is handed to another session, write the brief and large findings into a hand-over note (in the run folder, or a shared notes folder the session can read) and send its path, not the contents.
+
 ## 8. Report
 
 Tell the user what changed, each DoD item's result, what was verified and what was not (be explicit if tests could not run or already fail), any escalations, and follow-ups the agents noticed. Do not commit or push unless asked.
+
+Problems the agents found outside the plan (app bugs a test exposed, risky code nearby) are reported, each with a rough cost to fix, and never fixed unasked. The user picks which become work.
 
 ## Audit mode
 
