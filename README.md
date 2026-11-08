@@ -6,7 +6,7 @@ A Claude Code plugin that runs multi-step coding tasks through a scout → plan 
 
 - `skills/run/`: the full pipeline (`/orchestrate:run <task>`), including an audit mode for checking code against a spec.
 - `skills/review/`: a quick project-aware review of the current diff (`/orchestrate:review`), for work done outside the pipeline.
-- `agents/`: `scout`, `executor`, `reviewer`, `mobile-tester` (Android emulator / iOS Simulator), `web-tester` (local dev server in the in-app browser).
+- `agents/`: `scout`, `executor`, `reviewer`, `tester` (an automated device or browser suite, or manual cases on an Android emulator, iOS Simulator or local dev server; the profile's `Kind` picks the mobile or web rules).
 - `templates/profile.md`: the per-project profile template.
 
 ## How it works

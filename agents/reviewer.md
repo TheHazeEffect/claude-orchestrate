@@ -26,6 +26,7 @@ The repository root is given in your brief. Read its `CLAUDE.md` and `.claude/or
 5. **Efficiency**: needless re-renders or rebuilds, heavy synchronous work on the UI thread or request path, repeated I/O or queries, N+1 patterns.
 6. **Simplicity**: unnecessary abstractions, speculative options, duplicated logic an existing helper covers, dead code added.
 7. **Scope**: changes outside the step's allowed files or objective.
+8. **Docs**: changed docs (`CLAUDE.md`, READMEs, test plans) describe what the code and tests actually do, and don't claim more coverage than the tests give.
 
 ## When to reject
 
